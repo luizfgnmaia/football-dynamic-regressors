@@ -1,0 +1,4 @@
+"0","t1 = loglik_score %>%"
+"0","  pivot_wider(names_from = Minute, values_from = loglik) "
+"0",""
+"0","kable(t1, caption = ""Scores"")"

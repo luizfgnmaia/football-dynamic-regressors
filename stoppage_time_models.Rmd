@@ -1,0 +1,121 @@
+---
+title: "Stoppage time models"
+output: html_document
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(dplyr)
+library(knitr)
+library(xtable)
+
+source("functions/fit_st_model.R")
+load("raw-data/intervals.RData")
+```
+
+```{r, message = FALSE, warning = FALSE}
+m0 = fit_st_model(intervals, intercept = TRUE, goals = FALSE, red_cards = FALSE, 
+                  close_match = FALSE)
+
+m1 = fit_st_model(intervals, intercept = TRUE, goals = TRUE, red_cards = FALSE, 
+                  close_match = FALSE, same_goals = TRUE)
+
+m2 = fit_st_model(intervals, intercept = TRUE, goals = TRUE, red_cards = FALSE, 
+                  close_match = FALSE, same_goals = FALSE)
+
+m3 = fit_st_model(intervals, intercept = TRUE, goals = FALSE, red_cards = TRUE, 
+                  close_match = FALSE, same_red_cards = TRUE)
+
+m4 = fit_st_model(intervals, intercept = TRUE, goals = FALSE, red_cards = TRUE, 
+                  close_match = FALSE, same_red_cards = FALSE)
+
+m5 = fit_st_model(intervals, intercept = TRUE, goals = FALSE, red_cards = TRUE, 
+                  close_match = TRUE)
+```
+
+```{r}
+st_par = tibble(model = 0:5, 
+                
+                intercept1 = exp(c(m0$st1_parameters["intercept"],
+                                   m1$st1_parameters["intercept"],
+                                   m2$st1_parameters["intercept"],
+                                   m3$st1_parameters["intercept"],
+                                   m4$st1_parameters["intercept"],
+                                   m5$st1_parameters["intercept"])),
+                
+                intercept2 = exp(c(m0$st2_parameters["intercept"],
+                                   m1$st2_parameters["intercept"],
+                                   m2$st2_parameters["intercept"],
+                                   m3$st2_parameters["intercept"],
+                                   m4$st2_parameters["intercept"],
+                                   m5$st2_parameters["intercept"])),
+                
+                goals1 = exp(c(m0$st1_parameters["goals"],
+                               m1$st1_parameters["goals"],
+                               m2$st1_parameters["goals"],
+                               m3$st1_parameters["goals"],
+                               m4$st1_parameters["goals"],
+                               m5$st1_parameters["goals"])),
+                
+                goals2 = exp(c(m0$st2_parameters["goals"],
+                               m1$st2_parameters["goals"],
+                               m2$st2_parameters["goals"],
+                               m3$st2_parameters["goals"],
+                               m4$st2_parameters["goals"],
+                               m5$st2_parameters["goals"])),
+                
+                red_cards_1 = exp(c(m0$st1_parameters["red_cards"],
+                                    m1$st1_parameters["red_cards"],
+                                    m2$st1_parameters["red_cards"],
+                                    m3$st1_parameters["red_cards"],
+                                    m4$st1_parameters["red_cards"],
+                                    m5$st1_parameters["red_cards"])),
+                
+                
+                red_cards_2 = exp(c(m0$st2_parameters["red_cards"],
+                                    m1$st2_parameters["red_cards"],
+                                    m2$st2_parameters["red_cards"],
+                                    m3$st2_parameters["red_cards"],
+                                    m4$st2_parameters["red_cards"],
+                                    m5$st2_parameters["red_cards"])),
+                
+                close_match = exp(c(m0$st2_parameters["close_match"],
+                                    m1$st2_parameters["close_match"],
+                                    m2$st2_parameters["close_match"],
+                                    m3$st2_parameters["close_match"],
+                                    m4$st2_parameters["close_match"],
+                                    m5$st2_parameters["close_match"])))
+
+kable(st_par)
+
+print(xtable(st_par, digits = 2), include.rownames = FALSE)
+```
+
+```{r}
+aic <- function(loglik, k) {
+  2*k - 2*loglik
+}
+
+bic <- function(loglik, k, n) {
+  k*log(n) - 2*loglik
+}
+
+n = 2*max(intervals$match)
+```
+
+```{r}
+aicbic = tibble(model = 0:5, 
+                loglik = c(m0$loglik, m1$loglik, m2$loglik, m3$loglik, m4$loglik, m5$loglik),
+                k = c(2, 3, 4, 3, 4, 5)) %>%
+  mutate(AIC = aic(loglik, k),
+         BIC = bic(loglik, k, n))
+
+kable(aicbic)
+
+print(xtable(aicbic, digits = 0), include.rownames = FALSE)
+```
+

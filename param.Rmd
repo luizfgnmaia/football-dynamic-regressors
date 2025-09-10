@@ -1,0 +1,184 @@
+---
+title: "Parameters"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(dplyr)
+library(knitr)
+library(xtable)
+
+options(knitr.kable.NA = "")
+
+source("functions/fit_dynamic_model.R")
+load("raw-data/intervals.RData")
+
+n_matches = max(intervals$match)
+n_teams = length(unique(intervals$home_team))
+n_goals = sum(intervals$home_goal) + sum(intervals$away_goal)
+
+mod0 = fit_dynamic_model(intervals, par_log_market_value_difference = FALSE, par_second_half = FALSE, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod1 = fit_dynamic_model(intervals, par_second_half = FALSE, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod2 = fit_dynamic_model(intervals, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod3 = fit_dynamic_model(intervals, par_player_difference = FALSE)
+mod4 = fit_dynamic_model(intervals)
+
+mod0g = fit_dynamic_model(intervals, goal_model_only = TRUE, par_log_market_value_difference = FALSE, par_second_half = FALSE, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod1g = fit_dynamic_model(intervals, goal_model_only = TRUE, par_second_half = FALSE, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod2g = fit_dynamic_model(intervals, goal_model_only = TRUE, par_goal_difference = FALSE, par_player_difference = FALSE)
+mod3g = fit_dynamic_model(intervals, goal_model_only = TRUE, par_player_difference = FALSE)
+mod4g = fit_dynamic_model(intervals, goal_model_only = TRUE)
+
+save(mod4, file = "data/mod4.RData")
+```
+
+# Stoppage time
+```{r}
+st_param = tibble(Parameter = c("Intercept 1", "Red cards 1", "Intercept 2", "Red cards 2", "Close match"),
+                  Estimate = c(mod4$st1_parameters, mod4$st2_parameters),
+                  Exponential = exp(c(mod4$st1_parameters, mod4$st2_parameters)))
+
+kable(st_param, caption = "Stoppage time parameters")
+
+print(xtable(st_param, digits = 4), include.rownames = FALSE)
+```
+
+# Red cards
+```{r}
+rc_param = tibble(Parameter = c("Home constant", "Home time", "Away constant", "Away time"),
+                  Estimate = c(mod4$home_red_card_parameters, mod4$away_red_card_parameters),
+                  Exponential = exp(c(mod4$home_red_card_parameters, mod4$away_red_card_parameters)))
+
+kable(rc_param, caption = "Red card parameters")
+
+print(xtable(rc_param, digits = 2), include.rownames = FALSE)
+```
+
+# Goals
+```{r}
+goal_param = tibble(Model = 0:4,
+                    "Home advantage" = c(mod0$goal_parameters["home_advantage"],
+                                         mod1$goal_parameters["home_advantage"],
+                                         mod2$goal_parameters["home_advantage"],
+                                         mod3$goal_parameters["home_advantage"],
+                                         mod4$goal_parameters["home_advantage"]),
+                    "Log market value difference" = c(mod0$goal_parameters["log_market_value_difference"],
+                                                      mod1$goal_parameters["log_market_value_difference"],
+                                                      mod2$goal_parameters["log_market_value_difference"],
+                                                      mod3$goal_parameters["log_market_value_difference"],
+                                                      mod4$goal_parameters["log_market_value_difference"]),
+                    "Second half" = c(mod0$goal_parameters["second_half"],
+                                      mod1$goal_parameters["second_half"],
+                                      mod2$goal_parameters["second_half"],
+                                      mod3$goal_parameters["second_half"],
+                                      mod4$goal_parameters["second_half"]),
+                    "Goal difference" = c(mod0$goal_parameters["goal_difference"],
+                                          mod1$goal_parameters["goal_difference"],
+                                          mod2$goal_parameters["goal_difference"],
+                                          mod3$goal_parameters["goal_difference"],
+                                          mod4$goal_parameters["goal_difference"]),
+                    "Player difference" = c(mod0$goal_parameters["player_difference"],
+                                            mod1$goal_parameters["player_difference"],
+                                            mod2$goal_parameters["player_difference"],
+                                            mod3$goal_parameters["player_difference"],
+                                            mod4$goal_parameters["player_difference"])) %>%
+  mutate(`Log market value difference` = ifelse(`Log market value difference` == 0, NA, `Log market value difference`),
+         `Second half` = ifelse(`Second half` == 0, NA, `Second half`),
+         `Goal difference` = ifelse(`Goal difference` == 0, NA, `Goal difference`),
+         `Player difference` = ifelse(`Player difference` == 0, NA, `Player difference`))
+
+kable(goal_param, caption = "Goal parameters")
+
+print(xtable(goal_param, digits = 4), include.rownames = FALSE)
+```
+
+```{r}
+exp_goal_param = goal_param %>%
+  mutate(`Home advantage` = exp(`Home advantage`),
+         `Log market value difference` = exp(`Log market value difference`),
+         `Second half` = exp(`Second half`),
+         `Goal difference` = exp(`Goal difference`),
+         `Player difference` = exp(`Player difference`))
+
+kable(exp_goal_param, caption = "Exponential of goal parameters")
+
+print(xtable(exp_goal_param, digits = 2), include.rownames = FALSE)
+```
+
+```{r}
+teams = tibble(Team = names(mod4$alpha), Attack = mod4$alpha, Defence = mod4$beta) %>%
+  mutate(`Attack-Defense` = Attack-Defence) %>%
+  arrange(desc(`Attack-Defense`))
+
+kable(teams, caption = "Team parameters")
+
+print(xtable(teams, digits = 4), include.rownames = FALSE)
+```
+
+```{r}
+exp_teams = tibble(Team = names(mod4$alpha), Attack = exp(mod4$alpha), Defence = exp(mod4$beta)) %>%
+  mutate(`Attack/Defense` = Attack/Defence) %>%
+  arrange(desc(`Attack/Defense`))
+
+kable(exp_teams, caption = "Exponential of team parameters")
+
+print(xtable(exp_teams, digits = 2), include.rownames = FALSE)
+```
+
+# AIC and BIC
+
+```{r}
+aic <- function(loglik, k) {
+  2*k - 2*loglik
+}
+
+bic <- function(loglik, k, n) {
+  k*log(n) - 2*loglik
+}
+```
+
+```{r}
+aicbic = tibble(Model = 0:4, 
+                loglik = c(mod0g$loglik, mod1g$loglik, mod2g$loglik, mod3g$loglik, mod4g$loglik),
+                k = c(n_teams*2+1, n_teams*2+2, n_teams*2+3, n_teams*2+4, n_teams*2+5)) %>%
+  mutate(AIC = aic(loglik, k),
+         BIC = bic(loglik, k, n_goals))
+
+kable(aicbic, caption = "AIC and BIC")
+
+print(xtable(aicbic, digits = 0), include.rownames = FALSE)
+```
+
+# Likelihood ratio test
+
+## Comparing Model 0 to Model 1, Model 1 to Model 2, ... , Model 3 to Model 4
+```{r}
+lrt <- function(loglik0, loglik1, df) {
+  lambda_LR = - 2 * (loglik0 - loglik1)
+  return(pchisq(lambda_LR, df = df, lower.tail = FALSE))
+}
+
+tib_lrt1 = tibble(`H0 Model` = 0:3, `H1 Model` = 1:4, 
+                  `p-value` = c(lrt(mod0g$loglik, mod1g$loglik, 1),
+                                lrt(mod1g$loglik, mod2g$loglik, 1),
+                                lrt(mod2g$loglik, mod3g$loglik, 1),
+                                lrt(mod3g$loglik, mod4g$loglik, 1)))
+
+tib_lrt1
+```
+
+## Comparing Models 0~3 to Model 4
+```{r}
+tib_lrt2 = tibble(`H0 Model` = 0:3, `H1 Model` = 4, 
+                  `p-value` = c(lrt(mod0g$loglik, mod4g$loglik, 4),
+                                lrt(mod1g$loglik, mod4g$loglik, 3),
+                                lrt(mod2g$loglik, mod4g$loglik, 2),
+                                lrt(mod3g$loglik, mod4g$loglik, 1)))
+
+tib_lrt2
+```
+

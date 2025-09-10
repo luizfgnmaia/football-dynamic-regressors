@@ -1,0 +1,26 @@
+{
+    "id": "34A8DA30",
+    "path": "~/Rproj/football-dynamic-regressors/eda.Rmd",
+    "project_path": "eda.Rmd",
+    "type": "r_markdown",
+    "hash": "3680321343",
+    "contents": "",
+    "dirty": false,
+    "created": 1757522284040.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "96,1",
+        "scrollLine": "92"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1757525922,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1757525922441,
+    "read_only": false,
+    "read_only_alternatives": []
+}

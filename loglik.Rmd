@@ -1,0 +1,81 @@
+---
+title: "loglik"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(xtable)
+library(ggplot2)
+
+load("data/probabilities.RData")
+
+# Some scores had p==0, they were replaced with 1/n_sims
+# which(is.na(probabilities[,c(46:75)]), arr.ind = TRUE)
+probabilities[,c(46:75)][which(is.na(probabilities[,c(46:75)]), arr.ind = TRUE)] = 10^-5
+n = nrow(probabilities)
+
+logliks = apply(probabilities[, 16:ncol(probabilities)], 2, function(x) sum(log(x))/n)
+
+m0s = logliks[paste0("p_score_0_", c(0, 15, 30, 45, 60, 75))]
+m1s = logliks[paste0("p_score_1_", c(0, 15, 30, 45, 60, 75))]
+m2s = logliks[paste0("p_score_2_", c(0, 15, 30, 45, 60, 75))]
+m3s = logliks[paste0("p_score_3_", c(0, 15, 30, 45, 60, 75))]
+m4s = logliks[paste0("p_score_4_", c(0, 15, 30, 45, 60, 75))]
+
+loglik_score = tibble(Model = c(rep("0", 6), rep("1", 6), rep("2", 6), rep("3", 6), rep("4", 6)),
+                      Minute = rep(c(0, 15, 30, 45, 60, 75), 5),
+                      loglik = c(m0s, m1s, m2s, m3s, m4s))
+```
+
+```{r}
+t1 = loglik_score %>%
+  pivot_wider(names_from = Minute, values_from = loglik) 
+
+kable(t1, caption = "Scores")
+
+print(xtable(t1, digits = 4), include.rownames = FALSE)
+```
+
+```{r}
+p1 = loglik_score %>%
+  ggplot(aes(x = Minute, y = loglik, col = Model)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = c(0, 15, 30, 45, 60, 75))
+
+p1
+```
+
+```{r}
+p2 = loglik_score %>%
+  pivot_wider(names_from = "Model", values_from = "loglik", names_prefix = "Model ") %>%
+  mutate(`Model 1` = `Model 1` - `Model 0`,
+         `Model 2` = `Model 2` - `Model 0`,
+         `Model 3` = `Model 3` - `Model 0`,
+         `Model 4` = `Model 4` - `Model 0`,
+         `Model 0` = 0) %>%
+  pivot_longer(cols = starts_with("Model"), names_to = "Model", values_to = "loglik") %>%
+  mutate(Model = stringr::str_replace_all(Model, "Model ", "")) %>%
+  ggplot(aes(x = Minute, y = loglik, col = Model)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = c(0, 15, 30, 45, 60, 75)) +
+  # ylab("loglik(Model) - loglik(Model 0)")
+  ylab("") +
+  theme(legend.position = c(0.01, 0.95),
+  legend.justification = c(0, 1),
+  legend.background = element_rect(fill = "white", color = "black"),
+  legend.direction = "horizontal")
+
+p2
+
+ggsave(plot = p2, filename = "plots/loglik_score.png", width = 10, height = 5, dpi = 300)
+```
+

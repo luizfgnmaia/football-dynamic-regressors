@@ -1,0 +1,7 @@
+"0","p1 = loglik_score %>%"
+"0","  ggplot(aes(x = Minute, y = loglik, col = Model)) +"
+"0","  geom_line(size = 1) +"
+"0","  geom_point(size = 2) +"
+"0","  scale_x_continuous(breaks = c(0, 15, 30, 45, 60, 75))"
+"0",""
+"0","ggplotly(p1)"

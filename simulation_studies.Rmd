@@ -1,0 +1,49 @@
+---
+title: "Simulation studies"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+options(scipen = 999)
+
+library(dplyr)
+library(knitr)
+library(xtable)
+
+load("data/home_draw_away.RData")
+load("data/home_goals.RData")
+load("data/away_goals.RData")
+```
+
+```{r}
+format <- function(df) {
+  
+  first_row = cbind(df[1,1], round(df[1,2:ncol(df)], 4))
+  
+  other_rows = cbind(df[2:nrow(df),1], as.data.frame(apply(df[2:nrow(df), 2:ncol(df)], 2, function(x) paste0(ifelse(x>0, "+", ""), round(x, 4)))))
+  
+  return(rbind(first_row, other_rows))
+}
+```
+
+```{r}
+home_draw_away = format(home_draw_away)
+home_goals = format(home_goals)
+away_goals = format(away_goals)
+
+kable(home_draw_away, caption = "Home, Draw, Away")
+print(xtable(home_draw_away, digits = 4), include.rownames = FALSE)
+
+kable(home_goals, caption = "Home Goals")
+print(xtable(home_goals, digits = 4), include.rownames = FALSE)
+
+kable(away_goals, caption = "Away Goals")
+print(xtable(away_goals, digits = 4), include.rownames = FALSE)
+```
+
+
+
