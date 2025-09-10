@@ -7,6 +7,7 @@ output: md_document
 
 Luiz Fernando G. N. Maia, Teemu Pennanen, Moacyr A.H.B. da Silva and Rodrigo S. Targino
 
+
 ## Structure of the repository
 
 + `raw-data/` folder of raw data files
@@ -19,13 +20,13 @@ Luiz Fernando G. N. Maia, Teemu Pennanen, Moacyr A.H.B. da Silva and Rodrigo S. 
 
 + `simulations/` scripts used to do the simulations presented in Section 7
 
-  + They need to be ran at this order:
+They need to be ran at this order:
   
-  1) matches_to_ignore.R
-  2) models.R
-  3) simulations.R
-  4) probabilities.R
-  5) simulation_studies.R
+1) `matches_to_ignore.R`
+2) `models.R`
+3) `simulations.R`
+4) `probabilities.R`
+5) `simulation_studies.R`
 
 + `eda.Rmd` exploratory data analysis, generates Figures 1 to 6.
 

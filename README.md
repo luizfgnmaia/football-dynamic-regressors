@@ -18,13 +18,13 @@ Rodrigo S. Targino
 -   `simulations/` scripts used to do the simulations presented in
     Section 7
 
-    -   They need to be ran at this order:
+They need to be ran at this order:
 
-    1.  matches\_to\_ignore.R
-    2.  models.R
-    3.  simulations.R
-    4.  probabilities.R
-    5.  simulation\_studies.R
+1.  `matches_to_ignore.R`
+2.  `models.R`
+3.  `simulations.R`
+4.  `probabilities.R`
+5.  `simulation_studies.R`
 
 -   `eda.Rmd` exploratory data analysis, generates Figures 1 to 6.
 
