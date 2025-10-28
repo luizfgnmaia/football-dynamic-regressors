@@ -88,18 +88,15 @@ load("data/probabilities.RData")
 
 results$match[is.na(p)] 
 
-p[is.na(p)] = probabilities$p_result_4_0[is.na(p)] # substitui os sem previsão pelas previsões do modelo 4
+p[is.na(p)] = probabilities$p_result_4_0[is.na(p)] # I replaced the matches without odds with the predictions from model 4
 
 n = length(p)
-sum(log(p))/n # -0.9998184
 
-mean(p_home, na.rm = TRUE) # 0.4650731
-mean(p_draw, na.rm = TRUE) # 0.2722616
-mean(p_away, na.rm = TRUE) # 0.2626653
+### These 3 lines correspond to the last row of Table 11
 
--round(0.4780 - 0.4650731, 4)
--round(0.2742 - 0.2722616, 4)
--round(0.2478 - 0.2626653, 4)
+-round(0.4780 - mean(p_home, na.rm = TRUE), 4)*100
+-round(0.2742 - mean(p_draw, na.rm = TRUE), 4)*100
+-round(0.2478 - mean(p_away, na.rm = TRUE), 4)*100
 
 ### For brier score
 

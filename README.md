@@ -31,14 +31,15 @@ They need to be ran at this order:
 -   `param.Rmd` and `stoppage_time_models.Rmd` scripts used to compute
     the parameters displayed in section 6 (Tables 2, 3, 4, 6, 7, 8).
 
--   `simulation_studies.Rmd` generates Tables 11, 12 and 13.
+-   `simulation_studies.Rmd` generates Tables 11 (with exception of the
+    last row), 12 and 13.
 
 -   `log_lik.Rmd` generates Figure 8.
 
 -   `minute_by_minute.R` generate Figures 9 and 10.
 
--   `scoring_rules.R` and `scoring_rules_draw.R` generates Figure 7 and
-    Tables 9 and 10.
+-   `scoring_rules.R` and `scoring_rules_draw.R` generates Figure 7,
+    Tables 9 and 10, and the last row of Table 11.
 
 ## Requirements
 

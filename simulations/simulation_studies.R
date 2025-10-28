@@ -353,3 +353,7 @@ away_goals = tibble(" " = c("Observed", "Model 0", "Model 1", "Model 2", "Model 
                     "3" = c(obs_away_goals_3, c(m0_away_goals_3, m1_away_goals_3, m2_away_goals_3, m3_away_goals_3, m4_away_goals_3) - obs_away_goals_3),
                     "4" = c(obs_away_goals_4, c(m0_away_goals_4, m1_away_goals_4, m2_away_goals_4, m3_away_goals_4, m4_away_goals_4) - obs_away_goals_4),
                     "5" = c(obs_away_goals_5, c(m0_away_goals_5, m1_away_goals_5, m2_away_goals_5, m3_away_goals_5, m4_away_goals_5) - obs_away_goals_5))
+
+save(home_draw_away, file = "data/home_draw_away.RData")
+save(home_goals, file = "data/home_goals.RData")
+save(away_goals, file = "data/away_goals.RData")
